@@ -4,7 +4,6 @@
 
 #include "vultures_types.h"
 #include "vultures_tile.h"
-#include "vultures_gametiles.h"
 #include "vultures_gfl.h"
 
 #include "hack.h"
