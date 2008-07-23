@@ -13,7 +13,7 @@
 /* EXPORT_TILES should be left off. This is a simple optionally built function
  * which exports as much of the Vulture's graphics as possible into a format
  * from which more traditional NetHack or Slash'EM tilesets can be built. */
-#undef EXPORT_TILES
+#define EXPORT_TILES
 
 
 /* RELOCATEABLE will make Vultures try to determine where the binary is located
