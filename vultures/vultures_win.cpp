@@ -5,8 +5,10 @@
 
 #include "SDL.h"
 
+extern "C" {
 #include "hack.h"
 #include "skills.h"
+}
 
 #include "vultures_win.h"
 #include "vultures_win_event.h"
@@ -89,13 +91,14 @@ static int vultures_handle_event(struct window * topwin, struct window * win,
                                  void * result, SDL_Event * event, int * redraw);
 static void vultures_check_enhance(void);
 
-extern boolean can_advance(int skill, int speedy);
+
+extern "C" boolean can_advance(int skill, int speedy);
 
 /******************************
  * window management functions
  ******************************/
 
-struct window * vultures_create_window_internal(int nh_type, struct window * parent, int wintype)
+struct window * vultures_create_window_internal(int nh_type, struct window * parent, enum wintypes wintype)
 {
     int winid = 1;
     struct window * newwin;
@@ -103,7 +106,7 @@ struct window * vultures_create_window_internal(int nh_type, struct window * par
     /* if necessary make space in the vultures_windows array */
     if (windowcount_cur == windowcount_max)
     {
-        vultures_windows = realloc(vultures_windows, (windowcount_max + 16) * sizeof(struct window*));
+        vultures_windows = (struct window **)realloc(vultures_windows, (windowcount_max + 16) * sizeof(struct window*));
         memset(&vultures_windows[windowcount_max], 0, 16 * sizeof(struct window*));
         windowcount_max += 16;
 
@@ -122,7 +125,7 @@ struct window * vultures_create_window_internal(int nh_type, struct window * par
         panic("could not find a free winarray entry, even though there should have been one!\n");
 
     /* alloc the new window */
-    newwin = malloc(sizeof(struct window));
+    newwin = (struct window *)malloc(sizeof(struct window));
     if (!newwin)
         panic("alloc failed!\n");
 
@@ -155,7 +158,7 @@ struct window * vultures_create_window_internal(int nh_type, struct window * par
 
 /* set the correct values for various window vars depending on the window type,
  * in particular draw and event_handler */
-void vultures_init_wintype(struct window * win, int wintype)
+void vultures_init_wintype(struct window * win, enum wintypes wintype)
 {
     win->v_type = wintype;
 
@@ -302,13 +305,13 @@ void vultures_hide_window(struct window * win)
 void vultures_create_root_window(void)
 {
     /* create window array */
-    vultures_windows = malloc(16 * sizeof(struct window*));
+    vultures_windows = (struct window **)malloc(16 * sizeof(struct window*));
     memset(vultures_windows, 0, 16 * sizeof(struct window*));
     windowcount_max = 16;
     struct window * win, *subwin;
 
     /* create base window */
-    win = malloc(sizeof(struct window));
+    win = (struct window *)malloc(sizeof(struct window));
     ROOTWIN = win;
     memset(win, 0, (sizeof(struct window)));
     /* root MUST have an event handler, because unhandled event get
@@ -391,7 +394,7 @@ struct window * vultures_get_window(int winid)
 
 
 /* create a hotspot. a hotspot is an invisible window, whose purpose is recieving events */
-int vultures_create_hotspot(int x, int y, int w, int h, int menu_id, struct window * parent, char * name)
+int vultures_create_hotspot(int x, int y, int w, int h, int menu_id, struct window * parent, const char * name)
 {
     struct window * win;
 
@@ -469,7 +472,7 @@ int vultures_get_input(int force_x, int force_y, const char *ques, char *input)
     subwin->autobg = 1;
     /* duplicate input. DON'T point to input directly, that causes segfaults
      * if the game is quit while an input is open */
-    subwin->caption = malloc(256);
+    subwin->caption = (char *)malloc(256);
     subwin->caption[0] = '\0';
 
     /* calc sizes and positions */
@@ -520,7 +523,7 @@ struct window * vultures_query_choices(const char * ques, const char *choices, c
     struct window *win, *button;
     int nbuttons = 0, longdesc = 0;
     int i, len;
-    char * str = (char*)choices;
+    const char * str = (char*)choices;
 
     win = vultures_create_window_internal(0, NULL, V_WINTYPE_MAIN);
     win->event_handler = vultures_eventh_query_choices;
@@ -548,7 +551,7 @@ struct window * vultures_query_choices(const char * ques, const char *choices, c
 
         button = vultures_create_window_internal(0, win, V_WINTYPE_BUTTON);
 
-        button->caption = malloc(len+1);
+        button->caption = (char *)malloc(len+1);
         strncpy(button->caption, str, len);
         button->caption[len] = '\0';
 
@@ -864,7 +867,7 @@ void vultures_eventstack_add(int num, int x, int y, int rtype)
 {
     if (!vultures_eventstack)
     {
-        vultures_eventstack = malloc(V_EVENTSTACK_SIZE * sizeof(vultures_event));
+        vultures_eventstack = (vultures_event *)malloc(V_EVENTSTACK_SIZE * sizeof(vultures_event));
         vultures_eventstack_top = -1;
     }
 
@@ -2156,7 +2159,7 @@ void vultures_layout_menu(struct window *win)
             while (sep && i < 7)
             {
                 coltxt = vultures_create_window_internal(0, win, V_WINTYPE_TEXT);
-                coltxt->caption = malloc(sep-start+1);
+                coltxt->caption = (char *)malloc(sep-start+1);
                 strncpy(coltxt->caption, start, sep-start);
                 coltxt->caption[sep-start] = '\0';
                 coltxt->w = 1;
@@ -2172,7 +2175,7 @@ void vultures_layout_menu(struct window *win)
             }
 
             coltxt = vultures_create_window_internal(0, win, V_WINTYPE_TEXT);
-            coltxt->caption = malloc(strlen(start)+1);
+            coltxt->caption = (char *)malloc(strlen(start)+1);
             strcpy(coltxt->caption, start);
             coltxt->w = 1;
             coltxt->h = winelem->h;
@@ -2289,7 +2292,7 @@ void vultures_parse_statusline(struct window * statuswin, const char * str)
                 tokenarray[i][j]->y = 2 + j*vultures_get_lineheight(V_FONT_STATUS);
                 tokenarray[i][j]->w = 100;
                 tokenarray[i][j]->h = vultures_get_lineheight(V_FONT_STATUS);
-                tokenarray[i][j]->caption = malloc(64);
+                tokenarray[i][j]->caption = (char *)malloc(64);
                 tokenarray[i][j]->caption[0] = '\0';
             }
 
@@ -2556,7 +2559,7 @@ void vultures_invalidate_region(int x , int y, int w, int h)
 
     if (i >= vultures_invrects_max)
     {
-        vultures_invrects = realloc(vultures_invrects, (vultures_invrects_max + 16) * sizeof(SDL_Rect));
+        vultures_invrects = (SDL_Rect *)realloc(vultures_invrects, (vultures_invrects_max + 16) * sizeof(SDL_Rect));
         vultures_invrects_max += 16;
     }
 
@@ -2637,10 +2640,10 @@ void vultures_messages_add(const char * str)
     if (!vultures_messages_buf)
     {
         /* init if necessary */
-        vultures_messages_buf = malloc(V_MESSAGEBUF_SIZE * sizeof(char*));
+        vultures_messages_buf = (char **)malloc(V_MESSAGEBUF_SIZE * sizeof(char*));
         memset(vultures_messages_buf, 0, V_MESSAGEBUF_SIZE * sizeof(char*));
 
-        vultures_messages_ages = malloc(V_MESSAGEBUF_SIZE * sizeof(int));
+        vultures_messages_ages = (int *)malloc(V_MESSAGEBUF_SIZE * sizeof(int));
         vultures_messages_top = -1;
         vultures_messages_cur = -1;
     }

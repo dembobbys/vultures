@@ -138,7 +138,7 @@ void vultures_rect_surface
     Uint32 *screen;
 
     if (SDL_MUSTLOCK(surface)) SDL_LockSurface(surface);
-    screen = surface->pixels;
+    screen = (Uint32 *)surface->pixels;
 
     for (i = x1; i <= x2; i++)
     {
@@ -256,7 +256,7 @@ SDL_Surface *vultures_get_img_src
     /* Blitting would be a mistake here, because we need to preserve
      * the alpha channel, which blitting does not do */
     for (i = topoffset; i < (y2+1-y1-bottomoffset); i++)
-        memcpy(toSurface->pixels + toSurface->pitch*i + (leftoffset * 4),
+        memcpy((char*)toSurface->pixels + toSurface->pitch*i + (leftoffset * 4),
                &srcpixels[(i+y1)*img_source->pitch + (x1 + leftoffset)*4],
                destwidth*4);
 

@@ -30,7 +30,7 @@
 #define INSTRUMENT_FILE "music/instruments.xm"
 #define PATTERN_OFFSET 0x159 /* XXX This hard coded amount needs to be changed if instruments.xm
                               * is resaved.  It's the physical file offset of where the saved
-                              * blank patterns begin */  
+                              * blank patterns begin */
 #define pcmusic_load_instruments ( pcmusic_load_instrument_file()==INSTRUMENT_LOAD_SUCCESS )
 
 #define XM_PATTERNCOMPRESSION                       0x80
@@ -89,7 +89,7 @@ int pcmusic_load_instrument_file( void )
     pcmusic_instrument_buffer_size = ftell( instrument_file );
     fseek( instrument_file, 0, SEEK_SET );
 
-    pcmusic_instrument_buffer = malloc( pcmusic_instrument_buffer_size );
+    pcmusic_instrument_buffer = (unsigned char *)malloc( pcmusic_instrument_buffer_size );
     if ( pcmusic_instrument_buffer == NULL )
     {
         fclose( instrument_file );

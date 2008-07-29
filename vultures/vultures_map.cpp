@@ -19,8 +19,8 @@
 #include "epri.h"
 
 /* lookat isn't in the nethack headers, but we use it here ... */
-extern struct permonst * lookat(int, int, char *, char *);
-extern short glyph2tile[];
+extern "C" struct permonst * lookat(int, int, char *, char *);
+extern "C" short glyph2tile[];
 
 #define CMD_TRAVEL (char)0x90
 #define META(c) (0x80 | (c))
@@ -96,88 +96,7 @@ point vultures_map_highlight = {-1, -1};
 int vultures_map_highlight_objects = 0;
 
 
-static const int vultures_tilemap_misc[MAXPCHARS] = {
-#ifdef VULTURESCLAW
-    [S_toilet] = V_MISC_TOILET,
-#endif
-
-    [S_stone] = V_MISC_UNMAPPED_AREA,
-    [S_vwall] = V_TILE_WALL_GENERIC,
-    [S_hwall] = V_TILE_WALL_GENERIC,
-    [S_tlcorn] = V_TILE_WALL_GENERIC,
-    [S_trcorn] = V_TILE_WALL_GENERIC,
-    [S_blcorn] = V_TILE_WALL_GENERIC,
-    [S_brcorn] = V_TILE_WALL_GENERIC,
-    [S_crwall] = V_TILE_WALL_GENERIC,
-    [S_tuwall] = V_TILE_WALL_GENERIC,
-    [S_tdwall] = V_TILE_WALL_GENERIC,
-    [S_tlwall] = V_TILE_WALL_GENERIC,
-    [S_trwall] = V_TILE_WALL_GENERIC,
-    [S_ndoor] = V_MISC_DOOR_WOOD_BROKEN,
-    [S_vodoor] = V_MISC_VDOOR_WOOD_OPEN,
-    [S_hodoor] = V_MISC_HDOOR_WOOD_OPEN,
-    [S_vcdoor] = V_MISC_VDOOR_WOOD_CLOSED,
-    [S_hcdoor] = V_MISC_HDOOR_WOOD_CLOSED,
-    [S_room] = V_TILE_FLOOR_COBBLESTONE,
-    [S_corr] = V_TILE_FLOOR_ROUGH,
-    [S_upstair] = V_MISC_STAIRS_UP,
-    [S_dnstair] = V_MISC_STAIRS_DOWN,
-    [S_fountain] = V_MISC_FOUNTAIN,
-    [S_altar] = V_MISC_ALTAR,
-    [S_teleportation_trap] = V_MISC_TRAP_TELEPORTER,
-    [S_tree] = V_MISC_TREE,
-    [S_cloud] = V_MISC_CLOUD,
-    [S_air] = V_TILE_FLOOR_AIR,
-    [S_grave] = V_MISC_GRAVE,
-    [S_sink] = V_MISC_SINK,
-    [S_bear_trap] = V_MISC_TRAP_BEAR,
-    [S_rust_trap] = V_MISC_TRAP_WATER,
-    [S_pit] = V_MISC_TRAP_PIT,
-    [S_hole] = V_MISC_TRAP_PIT,
-    [S_trap_door] = V_MISC_TRAP_DOOR,
-    [S_water] = V_TILE_FLOOR_WATER,
-    [S_pool] = V_TILE_FLOOR_WATER,
-    [S_ice] = V_TILE_FLOOR_ICE,
-    [S_lava] = V_TILE_FLOOR_LAVA,
-    [S_throne] = V_MISC_THRONE,
-    [S_bars] = V_MISC_BARS,
-    [S_upladder] = V_MISC_LADDER_UP,
-    [S_dnladder] = V_MISC_LADDER_DOWN,
-    [S_arrow_trap] = V_MISC_TRAP_ARROW,
-    [S_rolling_boulder_trap] = V_MISC_ROLLING_BOULDER_TRAP,
-    [S_sleeping_gas_trap] = V_MISC_GAS_TRAP,
-    [S_fire_trap] = V_MISC_TRAP_FIRE,
-    [S_web] = V_MISC_WEB_TRAP,
-    [S_statue_trap] = OBJECT_TO_VTILE(STATUE),
-    [S_anti_magic_trap] = V_MISC_TRAP_ANTI_MAGIC,
-    [S_polymorph_trap] = V_MISC_TRAP_POLYMORPH,
-    [S_vbeam] = V_MISC_ZAP_VERTICAL,
-    [S_hbeam] = V_MISC_ZAP_HORIZONTAL,
-    [S_lslant] = V_MISC_ZAP_SLANT_LEFT,
-    [S_rslant] = V_MISC_ZAP_SLANT_RIGHT,
-    [S_litcorr] = V_TILE_FLOOR_ROUGH_LIT,
-    [S_ss1] = V_MISC_RESIST_SPELL_1,
-    [S_ss2] = V_MISC_RESIST_SPELL_2,
-    [S_ss3] = V_MISC_RESIST_SPELL_3,
-    [S_ss4] = V_MISC_RESIST_SPELL_4,
-    [S_dart_trap] = V_MISC_DART_TRAP,
-    [S_falling_rock_trap] = V_MISC_FALLING_ROCK_TRAP,
-    [S_squeaky_board] = V_MISC_SQUEAKY_BOARD,
-    [S_land_mine] = V_MISC_LAND_MINE,
-    [S_magic_portal] = V_MISC_MAGIC_PORTAL,
-    [S_spiked_pit] = V_MISC_SPIKED_PIT,
-    [S_hole] = V_MISC_HOLE,
-    [S_level_teleporter] = V_MISC_LEVEL_TELEPORTER,
-    [S_magic_trap] = V_MISC_MAGIC_TRAP,
-    [S_digbeam] = V_MISC_DIGBEAM,
-    [S_flashbeam] = V_MISC_FLASHBEAM,
-    [S_boomleft] = V_MISC_BOOMLEFT,
-    [S_boomright] = V_MISC_BOOMRIGHT,
-    [S_hcdbridge] = V_MISC_HCDBRIDGE,
-    [S_vcdbridge] = V_MISC_VCDBRIDGE,
-    [S_hodbridge] = V_MISC_HODBRIDGE,
-    [S_vodbridge] = V_MISC_VODBRIDGE
-};
+static int vultures_tilemap_misc[MAXPCHARS];
 
 
 /*----------------------------
@@ -270,23 +189,23 @@ int vultures_init_map(void)
     }
 
     /* Initialize map */
-    vultures_map_glyph       = malloc(V_MAP_HEIGHT * sizeof(int *));
-    vultures_map_back        = malloc(V_MAP_HEIGHT * sizeof(int *));
-    vultures_map_obj         = malloc(V_MAP_HEIGHT * sizeof(int *));
-    vultures_map_trap        = malloc(V_MAP_HEIGHT * sizeof(int *));
-    vultures_map_furniture   = malloc(V_MAP_HEIGHT * sizeof(int *));
-    vultures_map_specialeff  = malloc(V_MAP_HEIGHT * sizeof(int *));
-    vultures_map_mon         = malloc(V_MAP_HEIGHT * sizeof(int *));
-    vultures_map_specialattr = malloc(V_MAP_HEIGHT * sizeof(unsigned int**));
-    vultures_map_deco        = malloc(V_MAP_HEIGHT * sizeof(unsigned char *));
+    vultures_map_glyph       = (int **)malloc(V_MAP_HEIGHT * sizeof(int *));
+    vultures_map_back        = (int **)malloc(V_MAP_HEIGHT * sizeof(int *));
+    vultures_map_obj         = (int **)malloc(V_MAP_HEIGHT * sizeof(int *));
+    vultures_map_trap        = (int **)malloc(V_MAP_HEIGHT * sizeof(int *));
+    vultures_map_furniture   = (int **)malloc(V_MAP_HEIGHT * sizeof(int *));
+    vultures_map_specialeff  = (int **)malloc(V_MAP_HEIGHT * sizeof(int *));
+    vultures_map_mon         = (int **)malloc(V_MAP_HEIGHT * sizeof(int *));
+    vultures_map_specialattr = (unsigned int **)malloc(V_MAP_HEIGHT * sizeof(unsigned int**));
+    vultures_map_deco        = (unsigned char **)malloc(V_MAP_HEIGHT * sizeof(unsigned char *));
 
-    vultures_maptile_wall       = malloc(V_MAP_HEIGHT*sizeof(struct walls *));
-    vultures_maptile_floor_edge = malloc(V_MAP_HEIGHT*sizeof(struct fedges *));
+    vultures_maptile_wall       = (struct walls **)malloc(V_MAP_HEIGHT*sizeof(struct walls *));
+    vultures_maptile_floor_edge = (struct fedges **)malloc(V_MAP_HEIGHT*sizeof(struct fedges *));
 
-    vultures_map_tile_is_dark = malloc(V_MAP_HEIGHT*sizeof(char *));
-    vultures_room_indices     = malloc(V_MAP_HEIGHT*sizeof(char *));
+    vultures_map_tile_is_dark = (char **)malloc(V_MAP_HEIGHT*sizeof(char *));
+    vultures_room_indices     = (char **)malloc(V_MAP_HEIGHT*sizeof(char *));
 
-    vultures_minimap_syms     = malloc(V_MAP_HEIGHT*sizeof(char *));
+    vultures_minimap_syms     = (char **)malloc(V_MAP_HEIGHT*sizeof(char *));
 
     if ((!vultures_map_back) || (!vultures_map_obj) || (!vultures_map_trap) || (!vultures_map_glyph) ||
         (!vultures_map_furniture) || (!vultures_map_mon) || (!vultures_map_specialeff) ||
@@ -296,23 +215,23 @@ int vultures_init_map(void)
 
     for (i = 0; i < V_MAP_HEIGHT; i++)
     {
-        vultures_map_glyph[i]       = malloc(V_MAP_WIDTH * sizeof(int));
-        vultures_map_back[i]        = malloc(V_MAP_WIDTH * sizeof(int));
-        vultures_map_obj[i]         = malloc(V_MAP_WIDTH * sizeof(int));
-        vultures_map_trap[i]        = malloc(V_MAP_WIDTH * sizeof(int));
-        vultures_map_furniture[i]   = malloc(V_MAP_WIDTH * sizeof(int));
-        vultures_map_specialeff[i]  = malloc(V_MAP_WIDTH * sizeof(int));
-        vultures_map_mon[i]         = malloc(V_MAP_WIDTH * sizeof(int));
-        vultures_map_specialattr[i] = malloc(V_MAP_WIDTH * sizeof(unsigned int));
-        vultures_map_deco[i]        = malloc(V_MAP_WIDTH * sizeof(unsigned char));
+        vultures_map_glyph[i]       = (int *)malloc(V_MAP_WIDTH * sizeof(int));
+        vultures_map_back[i]        = (int *)malloc(V_MAP_WIDTH * sizeof(int));
+        vultures_map_obj[i]         = (int *)malloc(V_MAP_WIDTH * sizeof(int));
+        vultures_map_trap[i]        = (int *)malloc(V_MAP_WIDTH * sizeof(int));
+        vultures_map_furniture[i]   = (int *)malloc(V_MAP_WIDTH * sizeof(int));
+        vultures_map_specialeff[i]  = (int *)malloc(V_MAP_WIDTH * sizeof(int));
+        vultures_map_mon[i]         = (int *)malloc(V_MAP_WIDTH * sizeof(int));
+        vultures_map_specialattr[i] = (unsigned int *)malloc(V_MAP_WIDTH * sizeof(unsigned int));
+        vultures_map_deco[i]        = (unsigned char *)malloc(V_MAP_WIDTH * sizeof(unsigned char));
 
-        vultures_maptile_wall[i]       = malloc(V_MAP_WIDTH*sizeof(struct walls));
-        vultures_maptile_floor_edge[i] = malloc(V_MAP_WIDTH*sizeof(struct fedges));
+        vultures_maptile_wall[i]       = (struct walls *)malloc(V_MAP_WIDTH*sizeof(struct walls));
+        vultures_maptile_floor_edge[i] = (struct fedges *)malloc(V_MAP_WIDTH*sizeof(struct fedges));
 
-        vultures_map_tile_is_dark[i] = malloc(V_MAP_WIDTH*sizeof(char));
-        vultures_room_indices[i] = malloc(V_MAP_WIDTH*sizeof(char));
+        vultures_map_tile_is_dark[i] = (char *)malloc(V_MAP_WIDTH*sizeof(char));
+        vultures_room_indices[i] = (char *)malloc(V_MAP_WIDTH*sizeof(char));
 
-        vultures_minimap_syms[i] = malloc(V_MAP_WIDTH*sizeof(char));
+        vultures_minimap_syms[i] = (char *)malloc(V_MAP_WIDTH*sizeof(char));
 
         if ((!vultures_map_back[i]) || (!vultures_map_obj[i]) || (!vultures_map_trap[i]) ||
             (!vultures_map_furniture[i]) || (!vultures_map_mon[i]) || (!vultures_map_specialeff[i]) ||
@@ -816,8 +735,8 @@ int vultures_draw_minimap(struct window * win)
                 destrect.x = 40 + 2*map_x - 2*map_y;
                 destrect.y = map_x + map_y;
 
-                pixels = win->image->pixels + 
-                         win->image->pitch * (destrect.y+6) + (destrect.x+6) * 4;
+                pixels = (Uint32 *)((char*)win->image->pixels + 
+                         win->image->pitch * (destrect.y+6) + (destrect.x+6) * 4);
 
                 /* A minimap symbol has this shape: _ C _
                  *                                  C C C
@@ -829,8 +748,8 @@ int vultures_draw_minimap(struct window * win)
                  /* pixels[2] = transparent -> dont write */
 
                 /* row 2 */
-                pixels = win->image->pixels + 
-                         win->image->pitch * (destrect.y+7) + (destrect.x+6) * 4;
+                pixels = (Uint32 *)((char*)win->image->pixels + 
+                         win->image->pitch * (destrect.y+7) + (destrect.x+6) * 4);
                 pixels[0] = minimap_colors[sym];
                 pixels[1] = minimap_colors[sym];
                 pixels[2] = minimap_colors[sym];
@@ -1698,7 +1617,7 @@ char * vultures_map_square_description(point target, int include_seen)
     /* All of monsters, objects, traps and furniture get descriptions */
     if ((vultures_map_mon[target.y][target.x] != V_TILE_NONE))
     {
-        out_str = malloc(BUFSZ);
+        out_str = (char *)malloc(BUFSZ);
         out_str[0] = '\0';
 
         look_buf[0] = '\0';
@@ -1723,7 +1642,7 @@ char * vultures_map_square_description(point target, int include_seen)
     }
     else if (vultures_map_obj[target.y][target.x] != V_TILE_NONE)
     {
-        out_str = malloc(BUFSZ);
+        out_str = (char *)malloc(BUFSZ);
         look_buf[0] = '\0';
         monbuf[0] = '\0';
         lookat(target.x, target.y, look_buf, monbuf);
@@ -1746,7 +1665,7 @@ char * vultures_map_square_description(point target, int include_seen)
     else if ((vultures_map_trap[target.y][target.x] != V_TILE_NONE) ||
              (vultures_map_furniture[target.y][target.x] != V_TILE_NONE))
     {
-        out_str = malloc(BUFSZ);
+        out_str = (char *)malloc(BUFSZ);
         lookat(target.x, target.y, out_str, monbuf);
 
         return out_str;
@@ -2522,7 +2441,7 @@ static char vultures_mappos_to_dirkey(point mappos)
 static void vultures_build_tilemap(void)
 {
     int i;
-    vultures_tilemap_engulf = malloc(NUMMONS*sizeof(int));
+    vultures_tilemap_engulf = (int *)malloc(NUMMONS*sizeof(int));
 
     /* build engulf tile array */
     for (i = 0; i < NUMMONS; i++)
@@ -2542,5 +2461,84 @@ static void vultures_build_tilemap(void)
     vultures_tilemap_engulf[PM_JUIBLEX]      = V_MISC_ENGULF_JUIBLEX;
 
     /* build "special tile" array: these are the tiles for dungeon glyphs */
+#ifdef VULTURESCLAW
+    vultures_tilemap_misc[S_toilet] = V_MISC_TOILET;
+#endif
 
+    vultures_tilemap_misc[S_stone] = V_MISC_UNMAPPED_AREA;
+    vultures_tilemap_misc[S_vwall] = V_TILE_WALL_GENERIC;
+    vultures_tilemap_misc[S_hwall] = V_TILE_WALL_GENERIC;
+    vultures_tilemap_misc[S_tlcorn] = V_TILE_WALL_GENERIC;
+    vultures_tilemap_misc[S_trcorn] = V_TILE_WALL_GENERIC;
+    vultures_tilemap_misc[S_blcorn] = V_TILE_WALL_GENERIC;
+    vultures_tilemap_misc[S_brcorn] = V_TILE_WALL_GENERIC;
+    vultures_tilemap_misc[S_crwall] = V_TILE_WALL_GENERIC;
+    vultures_tilemap_misc[S_tuwall] = V_TILE_WALL_GENERIC;
+    vultures_tilemap_misc[S_tdwall] = V_TILE_WALL_GENERIC;
+    vultures_tilemap_misc[S_tlwall] = V_TILE_WALL_GENERIC;
+    vultures_tilemap_misc[S_trwall] = V_TILE_WALL_GENERIC;
+    vultures_tilemap_misc[S_ndoor] = V_MISC_DOOR_WOOD_BROKEN;
+    vultures_tilemap_misc[S_vodoor] = V_MISC_VDOOR_WOOD_OPEN;
+    vultures_tilemap_misc[S_hodoor] = V_MISC_HDOOR_WOOD_OPEN;
+    vultures_tilemap_misc[S_vcdoor] = V_MISC_VDOOR_WOOD_CLOSED;
+    vultures_tilemap_misc[S_hcdoor] = V_MISC_HDOOR_WOOD_CLOSED;
+    vultures_tilemap_misc[S_room] = V_TILE_FLOOR_COBBLESTONE;
+    vultures_tilemap_misc[S_corr] = V_TILE_FLOOR_ROUGH;
+    vultures_tilemap_misc[S_upstair] = V_MISC_STAIRS_UP;
+    vultures_tilemap_misc[S_dnstair] = V_MISC_STAIRS_DOWN;
+    vultures_tilemap_misc[S_fountain] = V_MISC_FOUNTAIN;
+    vultures_tilemap_misc[S_altar] = V_MISC_ALTAR;
+    vultures_tilemap_misc[S_teleportation_trap] = V_MISC_TRAP_TELEPORTER;
+    vultures_tilemap_misc[S_tree] = V_MISC_TREE;
+    vultures_tilemap_misc[S_cloud] = V_MISC_CLOUD;
+    vultures_tilemap_misc[S_air] = V_TILE_FLOOR_AIR;
+    vultures_tilemap_misc[S_grave] = V_MISC_GRAVE;
+    vultures_tilemap_misc[S_sink] = V_MISC_SINK;
+    vultures_tilemap_misc[S_bear_trap] = V_MISC_TRAP_BEAR;
+    vultures_tilemap_misc[S_rust_trap] = V_MISC_TRAP_WATER;
+    vultures_tilemap_misc[S_pit] = V_MISC_TRAP_PIT;
+    vultures_tilemap_misc[S_hole] = V_MISC_TRAP_PIT;
+    vultures_tilemap_misc[S_trap_door] = V_MISC_TRAP_DOOR;
+    vultures_tilemap_misc[S_water] = V_TILE_FLOOR_WATER;
+    vultures_tilemap_misc[S_pool] = V_TILE_FLOOR_WATER;
+    vultures_tilemap_misc[S_ice] = V_TILE_FLOOR_ICE;
+    vultures_tilemap_misc[S_lava] = V_TILE_FLOOR_LAVA;
+    vultures_tilemap_misc[S_throne] = V_MISC_THRONE;
+    vultures_tilemap_misc[S_bars] = V_MISC_BARS;
+    vultures_tilemap_misc[S_upladder] = V_MISC_LADDER_UP;
+    vultures_tilemap_misc[S_dnladder] = V_MISC_LADDER_DOWN;
+    vultures_tilemap_misc[S_arrow_trap] = V_MISC_TRAP_ARROW;
+    vultures_tilemap_misc[S_rolling_boulder_trap] = V_MISC_ROLLING_BOULDER_TRAP;
+    vultures_tilemap_misc[S_sleeping_gas_trap] = V_MISC_GAS_TRAP;
+    vultures_tilemap_misc[S_fire_trap] = V_MISC_TRAP_FIRE;
+    vultures_tilemap_misc[S_web] = V_MISC_WEB_TRAP;
+    vultures_tilemap_misc[S_statue_trap] = OBJECT_TO_VTILE(STATUE);
+    vultures_tilemap_misc[S_anti_magic_trap] = V_MISC_TRAP_ANTI_MAGIC;
+    vultures_tilemap_misc[S_polymorph_trap] = V_MISC_TRAP_POLYMORPH;
+    vultures_tilemap_misc[S_vbeam] = V_MISC_ZAP_VERTICAL;
+    vultures_tilemap_misc[S_hbeam] = V_MISC_ZAP_HORIZONTAL;
+    vultures_tilemap_misc[S_lslant] = V_MISC_ZAP_SLANT_LEFT;
+    vultures_tilemap_misc[S_rslant] = V_MISC_ZAP_SLANT_RIGHT;
+    vultures_tilemap_misc[S_litcorr] = V_TILE_FLOOR_ROUGH_LIT;
+    vultures_tilemap_misc[S_ss1] = V_MISC_RESIST_SPELL_1;
+    vultures_tilemap_misc[S_ss2] = V_MISC_RESIST_SPELL_2;
+    vultures_tilemap_misc[S_ss3] = V_MISC_RESIST_SPELL_3;
+    vultures_tilemap_misc[S_ss4] = V_MISC_RESIST_SPELL_4;
+    vultures_tilemap_misc[S_dart_trap] = V_MISC_DART_TRAP;
+    vultures_tilemap_misc[S_falling_rock_trap] = V_MISC_FALLING_ROCK_TRAP;
+    vultures_tilemap_misc[S_squeaky_board] = V_MISC_SQUEAKY_BOARD;
+    vultures_tilemap_misc[S_land_mine] = V_MISC_LAND_MINE;
+    vultures_tilemap_misc[S_magic_portal] = V_MISC_MAGIC_PORTAL;
+    vultures_tilemap_misc[S_spiked_pit] = V_MISC_SPIKED_PIT;
+    vultures_tilemap_misc[S_hole] = V_MISC_HOLE;
+    vultures_tilemap_misc[S_level_teleporter] = V_MISC_LEVEL_TELEPORTER;
+    vultures_tilemap_misc[S_magic_trap] = V_MISC_MAGIC_TRAP;
+    vultures_tilemap_misc[S_digbeam] = V_MISC_DIGBEAM;
+    vultures_tilemap_misc[S_flashbeam] = V_MISC_FLASHBEAM;
+    vultures_tilemap_misc[S_boomleft] = V_MISC_BOOMLEFT;
+    vultures_tilemap_misc[S_boomright] = V_MISC_BOOMRIGHT;
+    vultures_tilemap_misc[S_hcdbridge] = V_MISC_HCDBRIDGE;
+    vultures_tilemap_misc[S_vcdbridge] = V_MISC_VCDBRIDGE;
+    vultures_tilemap_misc[S_hodbridge] = V_MISC_HODBRIDGE;
+    vultures_tilemap_misc[S_vodbridge] = V_MISC_VODBRIDGE;
 }
